@@ -64,3 +64,31 @@ exports.deleteUser = async (req, res) =>{
     res.status(500).json({ message: 'Server error' });
     }
 }
+
+
+exports.forgotPassword = async (req, res) =>{
+    try{
+        const {email} = req.body;
+
+        // check user is found
+        const user = await User.findOne({email: email});
+        if(!user)
+        return res.status(400).json({message:'User is not Found.'});
+
+        const newPassword = Math.random().toString(36).slice(-8);
+
+        console.log(`new password is: ${newPassword}`);
+        
+        // Hash password
+        const salt = await bcrypt.genSalt(10);
+        const hashPassword = await bcrypt.hash(newPassword, salt);
+
+        user.password = hashPassword;
+        
+        user.save();
+            res.status(200).json({ message: 'User Password Resetting Successfully' });
+    }catch(err){
+        console.error(err);
+    res.status(500).json({ message: 'Server error' });
+    }
+}
